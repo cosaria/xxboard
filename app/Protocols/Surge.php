@@ -33,15 +33,7 @@ class Surge implements ProtocolInterface
         $proxyGroup = '';
 
         foreach ($servers as $item) {
-            if (
-                $item['type'] === 'shadowsocks'
-                && in_array(data_get($item, 'protocol_settings.cipher'), [
-                    'aes-128-gcm',
-                    'aes-192-gcm',
-                    'aes-256-gcm',
-                    'chacha20-ietf-poly1305'
-                ])
-            ) {
+            if ($item['type'] === 'shadowsocks') {
                 $proxies .= self::buildShadowsocks($item['password'], $item);
                 $proxyGroup .= $item['name'] . ', ';
             }
@@ -93,6 +85,17 @@ class Surge implements ProtocolInterface
     public static function buildShadowsocks($password, $server)
     {
         $protocol_settings = $server['protocol_settings'];
+
+        if ($protocol_settings['cipher'] === '2022-blake3-aes-128-gcm') {
+            $serverKey = Helper::getServerKey($server['created_at'], 16);
+            $userKey = Helper::uuidToBase64($password, 16);
+            $password = "{$serverKey}:{$userKey}";
+        } elseif ($protocol_settings['cipher'] === '2022-blake3-aes-256-gcm') {
+            $serverKey = Helper::getServerKey($server['created_at'], 32);
+            $userKey = Helper::uuidToBase64($password, 32);
+            $password = "{$serverKey}:{$userKey}";
+        }
+
         $config = [
             "{$server['name']}=ss",
             "{$server['host']}",
@@ -181,7 +184,7 @@ class Surge implements ProtocolInterface
             "password={$password}",
             "download-bandwidth={$protocol_settings['bandwidth']['up']}",
             $protocol_settings['tls']['server_name'] ? "sni={$protocol_settings['tls']['server_name']}" : "",
-            // 'tfo=true', 
+            // 'tfo=true',
             'udp-relay=true'
         ];
         if (data_get($protocol_settings, 'tls.allow_insecure')) {

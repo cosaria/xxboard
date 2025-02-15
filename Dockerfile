@@ -18,7 +18,7 @@ COPY .docker /
 
 # Add build argument for cache busting
 ARG CACHEBUST=1
-ARG REPO_URL=https://github.com/cedar2025/Xboard
+ARG REPO_URL=https://github.com/cosaria/xxboard
 RUN git clone --depth 2 ${REPO_URL} .
 
 COPY .docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
@@ -29,10 +29,10 @@ RUN composer install --no-cache --no-dev \
     && chmod -R 775 /www \
     && mkdir -p /data \
     && chown redis:redis /data
-    
+
 ENV ENABLE_WEB=true \
     ENABLE_HORIZON=true \
-    ENABLE_REDIS=false 
+    ENABLE_REDIS=false
 
 EXPOSE 7001
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"] 
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
