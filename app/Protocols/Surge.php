@@ -87,11 +87,11 @@ class Surge implements ProtocolInterface
         $protocol_settings = $server['protocol_settings'];
 
         if ($protocol_settings['cipher'] === '2022-blake3-aes-128-gcm') {
-            $serverKey = Helper::getServerKey($server['created_at'], 16);
+            $serverKey = Helper::getServerKey(strtotime($server['created_at']), 16);
             $userKey = Helper::uuidToBase64($password, 16);
             $password = "{$serverKey}:{$userKey}";
         } elseif ($protocol_settings['cipher'] === '2022-blake3-aes-256-gcm') {
-            $serverKey = Helper::getServerKey($server['created_at'], 32);
+            $serverKey = Helper::getServerKey(strtotime($server['created_at']), 32);
             $userKey = Helper::uuidToBase64($password, 32);
             $password = "{$serverKey}:{$userKey}";
         }
